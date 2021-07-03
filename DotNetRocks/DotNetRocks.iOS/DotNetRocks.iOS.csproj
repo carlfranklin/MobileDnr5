@@ -154,4 +154,19 @@
       <Name>DotNetRocks</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\ffwd.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\rewind.png" />
+  </ItemGroup>
 </Project>
