@@ -15,6 +15,8 @@
         <StackLayout>
             <Label Margin="0,20,0,0"
                 Text=".NET Rocks! Podcast Client"
+                FontAttributes="Bold"
+                TextColor="Black"
                 FontSize="Title"
                 VerticalOptions="StartAndExpand" 
                 HorizontalOptions="CenterAndExpand" />
@@ -23,10 +25,12 @@
                 <dxcv:DXCollectionView.ItemTemplate>
                     <DataTemplate>
                         <StackLayout>
-                            <Label Text="{Binding ShowTitle}" FontSize="Large"/>
+                            <Label Text="{Binding ShowTitle}" 
+                                   TextColor="Black"
+                                   FontSize="Large"/>
                             <StackLayout Orientation="Horizontal">
                                 <Label Text="{Binding ShowNumber}" />
-                                <Label Text="{Binding DatePublished, StringFormat='Published {d}'}" />
+                                <Label Text="{Binding DatePublished, StringFormat='Published {0:d}'}" />
                             </StackLayout>
                             <Label Text="{Binding Description}" />
                             <Button Text="Episode Details"

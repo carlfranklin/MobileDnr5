@@ -155,9 +155,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <BundleResource Include="Resources\stop.png" />
-  </ItemGroup>
-  <ItemGroup>
     <BundleResource Include="Resources\ffwd.png" />
   </ItemGroup>
   <ItemGroup>
@@ -168,5 +165,11 @@
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\rewind.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\thumb.png" />
   </ItemGroup>
 </Project>

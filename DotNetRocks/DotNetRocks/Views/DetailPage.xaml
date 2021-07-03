@@ -12,6 +12,7 @@
 
     <ContentPage.Resources>
         <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <local:PlayingToOpacityConverter x:Key="PlayingToOpacityConverter"/>
     </ContentPage.Resources>
 
     <ContentPage.Content>
@@ -20,19 +21,80 @@
                 <StackLayout Margin="20" >
                     <Label Text="{Binding CurrentShow.ShowTitle}"
                         FontSize="Title"
+                        FontAttributes="Bold"
+                        TextColor="Black"
                         VerticalOptions="Start" 
                         HorizontalOptions="CenterAndExpand" />
-                    <Button Text="Play"
-                        IsVisible="{Binding IsPlaying, 
-                            Converter={StaticResource InverseBoolConverter}}"
-                        Command="{Binding Play}" />
-                    <Button Text="Stop" 
-                        IsVisible="{Binding IsPlaying}" 
-                        Command="{Binding Stop}" />
-                    <Label IsVisible="{Binding IsPlaying}" Text="{Binding CurrentStatus}" />
+                    <StackLayout Orientation="Horizontal" 
+                                 HeightRequest="50" 
+                                 HorizontalOptions="Center" >
+                        <Image Source="rewind" 
+                            IsEnabled="{Binding IsPlaying}" 
+                            Opacity="{Binding IsPlaying, Converter={StaticResource
+                                        PlayingToOpacityConverter}}">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer NumberOfTapsRequired="1" 
+                                  Command="{Binding Rewind}" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                        <Image Source="play.png" 
+                            Margin="10,0,0,0"
+                            IsEnabled="{Binding IsPlaying, 
+                                    Converter={StaticResource InverseBoolConverter}}"
+                            Opacity="{Binding IsPlaying, Converter={StaticResource
+                                    PlayingToOpacityConverter}, 
+                                    ConverterParameter=1}">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer NumberOfTapsRequired="1" 
+                                  Command="{Binding Play}" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                        <Image Source="pause" 
+                            Margin="10,0,0,0"
+                            IsEnabled="{Binding IsPlaying}" 
+                            Opacity="{Binding IsPlaying, Converter={StaticResource
+                                        PlayingToOpacityConverter}}">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer NumberOfTapsRequired="1" 
+                                  Command="{Binding Pause}" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                        <Image Source="stop" 
+                            Margin="10,0,0,0"
+                            IsEnabled="{Binding IsPlaying}" 
+                            Opacity="{Binding IsPlaying, Converter={StaticResource
+                                        PlayingToOpacityConverter}}">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer NumberOfTapsRequired="1" 
+                                  Command="{Binding Stop}" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                        <Image Source="ffwd" 
+                            Margin="10,0,0,0"
+                            IsEnabled="{Binding IsPlaying}" 
+                            Opacity="{Binding IsPlaying, Converter={StaticResource
+                                        PlayingToOpacityConverter}}">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer NumberOfTapsRequired="1" 
+                                  Command="{Binding FastForward}" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    </StackLayout>
+                    <StackLayout Orientation="Horizontal" Margin="0,10,0,10">
+                        <Label Text="{Binding CurrentPositionString}" WidthRequest="55" VerticalOptions="Center" />
+                        <Slider IsEnabled="{Binding IsPlaying}"
+                            HorizontalOptions="FillAndExpand"
+                            Value="{Binding CurrentPosition}" 
+                            HeightRequest="30"
+                            ThumbImageSource="thumb"
+                            BackgroundColor="DarkGray"
+                            />
+                    </StackLayout>
+                    
                     <StackLayout Orientation="Horizontal">
                         <Label Text="{Binding CurrentShow.ShowNumber}" />
-                        <Label Text="{Binding CurrentShow.DatePublished, StringFormat='Published {d}'}" />
+                        <Label Text="{Binding CurrentShow.DatePublished, StringFormat='Published {0:d}'}" />
+                        <Label Text="{Binding CurrentStatus}" />
                     </StackLayout>
                     <Label Text="{Binding CurrentShow.Description}" />
                     <dxcv:DXCollectionView x:Name="GuestList"

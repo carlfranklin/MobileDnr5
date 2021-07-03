@@ -35,6 +35,6 @@ namespace DotNetRocks.Views
             var viewModel = (DetailPageViewModel)BindingContext;
             await viewModel.PerformStop();
         }
-        
+
     }
 }

@@ -19,6 +19,7 @@ namespace DotNetRocks.ViewModels
         string CacheDir = "";
         string CachedFileName = "";
         string Mp3FileName = "";
+        bool IsPaused = false;
         FileStream LocalFileStream = null;
 
         public DetailPageViewModel()
@@ -77,12 +78,14 @@ namespace DotNetRocks.ViewModels
             {
                 if (TimeRemaining.Hours == 0)
                 {
-                    CurrentStatus = $"Time Remaining: {TimeRemaining.Minutes:D2}:{TimeRemaining.Seconds:D2}";
+                    CurrentStatus = $"Time Remaining: {TimeRemaining.Minutes:D1}:{TimeRemaining.Seconds:D2}";
                 }
                 else
                 {
-                    CurrentStatus = $"Time Remaining: {TimeRemaining.Hours:D2}:{TimeRemaining.Minutes:D2}:{TimeRemaining.Seconds:D2}";
+                    CurrentStatus = $"Time Remaining: {TimeRemaining.Hours:D1}:{TimeRemaining.Minutes:D2}:{TimeRemaining.Seconds:D2}";
                 }
+                base.OnPropertyChanged("CurrentPosition");
+                base.OnPropertyChanged("CurrentPositionString");
             }
         }
 
@@ -123,6 +126,149 @@ namespace DotNetRocks.ViewModels
             }
         }
 
+        private async Task PerformPlay()
+        {
+            IsPlaying = true;
+
+            if (IsPaused)
+            {
+                await CrossMediaManager.Current.PlayPause();
+            }
+            else
+            {
+                if (!IsCached)
+                {
+                    // Not in cache. Play from URL
+                    CurrentStatus = "Downloading...";
+                    await CrossMediaManager.Current.Play(CurrentShow.ShowDetails.File.Url);
+                    // Download the file to the cache
+                    DownloadFile();
+                }
+                else
+                {
+                    // In the cache. Play local file
+                    CurrentStatus = "Playing from Cache...";
+                    LocalFileStream = System.IO.File.OpenRead(CachedFileName);
+                    await CrossMediaManager.Current.Play(LocalFileStream, Mp3FileName);
+                }
+            }
+
+            IsPaused = false;
+        }
+
+        private ICommand pause;
+        public ICommand Pause
+        {
+            get
+            {
+                if (pause == null)
+                {
+                    pause = new AsyncCommand(PerformPause);
+                }
+
+                return pause;
+            }
+        }
+
+        public async Task PerformPause()
+        {
+            IsPlaying = false;
+            IsPaused = true;
+            CurrentStatus = "";
+            await CrossMediaManager.Current.Pause();
+        }
+
+        private ICommand rewind;
+        public ICommand Rewind
+        {
+            get
+            {
+                if (rewind == null)
+                {
+                    rewind = new Command(PerformRewind);
+                }
+
+                return rewind;
+            }
+        }
+
+        public void PerformRewind()
+        {
+            var TenSeconds = TimeSpan.FromSeconds(10);
+            if (CrossMediaManager.Current.Position > TenSeconds)
+                CrossMediaManager.Current.SeekTo(CrossMediaManager.Current.Position.Subtract(TenSeconds));
+            else
+                CrossMediaManager.Current.SeekToStart();
+        }
+
+        public string CurrentPositionString
+        {
+            get
+            {
+                TimeSpan currentMediaPosition = CrossMediaManager.Current.Position;
+                if (IsPlaying)
+                {
+                    var value = "";
+                    if (currentMediaPosition.Hours == 0)
+                    {
+                        value = $"{currentMediaPosition.Minutes:D1}:{currentMediaPosition.Seconds:D2}";
+                    }
+                    else
+                    {
+                        value = $"{currentMediaPosition.Hours:D1}:{currentMediaPosition.Minutes:D2}:{currentMediaPosition.Seconds:D2}";
+                    }
+                    return value;
+                }
+                else
+                    return "";
+            }
+        }
+
+
+        public double CurrentPosition
+        {
+            get
+            {
+                if (CrossMediaManager.Current == null)
+                    return (double)0;
+                else
+                {
+                    if (CrossMediaManager.Current.Position.TotalMilliseconds == 0)
+                        return (double)0;
+                    else
+                        return CrossMediaManager.Current.Position.TotalMilliseconds
+                            / CrossMediaManager.Current.Duration.TotalMilliseconds;
+                }
+            }
+            set
+            {
+                var newPosition = TimeSpan.FromMilliseconds(value * CrossMediaManager.Current.Duration.TotalMilliseconds);
+                CrossMediaManager.Current.SeekTo(newPosition);
+            }
+        }
+
+        private ICommand fastforward;
+        public ICommand FastForward
+        {
+            get
+            {
+                if (fastforward == null)
+                {
+                    fastforward = new Command(PerformFastForward);
+                }
+
+                return fastforward;
+            }
+        }
+
+        public void PerformFastForward()
+        {
+            var TenSeconds = TimeSpan.FromSeconds(10);
+            var LastTen = CrossMediaManager.Current.Duration.Subtract(TenSeconds);
+            if (CrossMediaManager.Current.Position < LastTen)
+                CrossMediaManager.Current.SeekTo(CrossMediaManager.Current.Position.Add(TenSeconds));
+          }
+
 
         public void DownloadFile()
         {
@@ -148,26 +294,6 @@ namespace DotNetRocks.ViewModels
             }
         }
 
-        private async Task PerformPlay()
-        {
-            IsPlaying = true;
-            
-            if (!IsCached)
-            {
-                // Not in cache. Play from URL
-                CurrentStatus = "Downloading...";
-                await CrossMediaManager.Current.Play(CurrentShow.ShowDetails.File.Url);
-                // Download the file to the cache
-                DownloadFile();
-            }
-            else
-            {
-                // In the cache. Play local file
-                CurrentStatus = "Playing from Cache...";
-                LocalFileStream = System.IO.File.OpenRead(CachedFileName);
-                await CrossMediaManager.Current.Play(LocalFileStream, Mp3FileName);
-            }
-        }
 
         private ICommand stop;
         public ICommand Stop
