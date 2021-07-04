@@ -4,7 +4,7 @@
 
 See more projects at https://github.com/carlfranklin/DotNetShow
 
-Watch the video at 
+Watch the video at https://youtu.be/LAXzQNOBVIU
 
 All episodes are listed at https://thedotnetshow.com
 
@@ -12,7 +12,7 @@ All episodes are listed at https://thedotnetshow.com
 
 Starting with episode 2 of The .NET Show, I am building a mobile podcast app for my podcast, .NET Rocks! using Xamarin Forms. 
 
-At this point our app has a HomePage which shows the first 20 episodes of the podcast. The user can load more episodes (20 at a time). For each episode, we provide a button so the user can see the details and play the podcast.
+At this point our app has a Home Page which shows the first 20 episodes of the podcast. The user can load more episodes (20 at a time). For each episode, we provide a button so the user can see the details and play the podcast.
 
 However, the user can only **Play** and **Stop**. There is no **Pause** function. Nor is there a way to scrub - or jump to a specific location in the audio.
 
@@ -20,7 +20,7 @@ In this episode we will:
 
 - Provide controls for **Play**, **Pause**, **Resume**, and **Stop**.
 - Provide  **Scrub** control.
-- Provide controls to **Jump Back** and **Jump Ahead** by 10 seconds.
+- Provide controls to **Rewind** and **Fast Forward** by 10 seconds.
 
 ### Step 25 - Add Media Buttons
 
@@ -144,7 +144,7 @@ However, that's not the worst part. They flash a grey background when clicked. I
 
 Instead I chose to use a regular `Image` control with a `GestureRecognizer` to handle the click. Turns out we can use our existing commands, too.
 
-One enhancement I made was to create a `PlayingToOpacityConverter` Value Converter which would give us an Opacity value based on whether or not we are playing. 
+One enhancement I made was to create a `PlayingToOpacityConverter` Value Converter which would give the button images an Opacity value based on whether or not we are playing. 
 
 Add the following class to the **DotNetRocks** project:
 
@@ -208,12 +208,12 @@ Add the new `PlayingToOpacityConverter` to the `<ContentPage.Resources>` section
 </ContentPage.Resources>
 ```
 
-Now change our new horizontal `StackPanel` to this:
+Now change our new horizontal `StackPanel` of buttons to this:
 
 ```xaml
 <StackLayout Orientation="Horizontal" HeightRequest="50" >
     <Image Source="play.png" IsEnabled="{Binding IsPlaying, 
-                                        Converter={StaticResource InverseBoolConverter}}"
+           Converter={StaticResource InverseBoolConverter}}"
            Opacity="{Binding IsPlaying, Converter={StaticResource
                     PlayingToOpacityConverter}, 
                     ConverterParameter=1}">
@@ -329,7 +329,6 @@ private async Task PerformPlay()
             await CrossMediaManager.Current.Play(LocalFileStream, Mp3FileName);
         }
     }
-
     IsPaused = false;
 }
 ```
@@ -477,6 +476,8 @@ Replace the entire `StackPanel` of buttons to this:
 </StackLayout>
 ```
 
+Try it out! Notice that the buttons are now centered in the page.
+
 ### Step 29 - Add a Slider bar
 
 Before we add the slider, we need a couple properties to bind it to. 
@@ -594,8 +595,6 @@ If you recall, the `BaseViewModel` class, from which our ViewModels inherit, has
 We also changed the string format of `TimeRemaining.Hours` to `D1`, which only shows one digit. I know, that won't work if an episode goes over 9 hours and 59 minutes, but hey - I can live with that. 
 
 I made a few other minor tweaks to the UI. One was the format of Title label. I made the text black and bold. It seemed to need that little bit of contrast. I made the same change on the *HomePage.xaml* page.
-
-I also centered the horizontal `StackPanel` containing the buttons.
 
 Here's what my app looks like now:
 
@@ -1277,4 +1276,6 @@ namespace DotNetRocks.ViewModels
     }
 }
 ```
+
+And that's where we'll leave it for this episode.
 
