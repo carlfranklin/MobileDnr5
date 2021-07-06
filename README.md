@@ -208,7 +208,7 @@ Add the new `PlayingToOpacityConverter` to the `<ContentPage.Resources>` section
 </ContentPage.Resources>
 ```
 
-Now change our new horizontal `StackPanel` of buttons to this:
+Now change our new horizontal `StackLayout` of buttons to this:
 
 ```xaml
 <StackLayout Orientation="Horizontal" HeightRequest="50" >
@@ -239,9 +239,9 @@ At first I tried binding Opacity `IsEnabled`, but because the value is dependent
 
 Before we move on, I want to fix a couple UI issues. First of all, the date published is displayed with the time as well. The bug is in the `StringFormat`. We need to set it to `{0:d}` rather than just `{d}` to get that to work. 
 
-Also, I want to move the status label into the horizontal `StackPanel` that shows the episode and date published.
+Also, I want to move the status label into the horizontal `StackLayout` that shows the episode and date published.
 
-Replace the status `Label` and informational `StackPanel` with this:
+Replace the status `Label` and informational `StackLayout` with this:
 
 ```xaml
 <StackLayout Orientation="Horizontal">
@@ -416,7 +416,7 @@ public void PerformFastForward()
 
 Here, I'm simply using the `CrossMediaManager.Current.SeekTo` method to start playing from the calculated position.
 
-Replace the entire `StackPanel` of buttons to this:
+Replace the entire `StackLayout` of buttons to this:
 
 ```xaml
 <StackLayout Orientation="Horizontal" 
@@ -480,35 +480,11 @@ Try it out! Notice that the buttons are now centered in the page.
 
 ### Step 29 - Add a Slider bar
 
-Before we add the slider, we need a couple properties to bind it to. 
+Before we add the slider, we need a `CurrentPosition` property to bind it to. 
 
 Add the following to *DetailPageViewModel.cs*:
 
 ```c#
-public string CurrentPositionString
-{
-    get
-    {
-        TimeSpan currentMediaPosition = CrossMediaManager.Current.Position;
-        if (IsPlaying)
-        {
-            var value = "";
-            if (currentMediaPosition.Hours == 0)
-            {
-                value = $"{currentMediaPosition.Minutes:D1}:{currentMediaPosition.Seconds:D2}";
-            }
-            else
-            {
-                value = $"{currentMediaPosition.Hours:D1}:{currentMediaPosition.Minutes:D2}:{currentMediaPosition.Seconds:D2}";
-            }
-            return value;
-        }
-        else
-            return "";
-    }
-}
-
-
 public double CurrentPosition
 {
     get
@@ -532,16 +508,12 @@ public double CurrentPosition
 }
 ```
 
-`CurrentPositionString` will show the current position as a formatted string, much like the time left that shows in `CurrentStatus`. 
-
 `CurrentPosition` is what we will bind the `Slider` control's `Value` property to. The `Value` property is a double between 0 and 1. By dividing the `CrossMediaManager.Current.Position.TotalMilliseconds` by `CrossMediaManager.Current.Duration.TotalMilliseconds` we get the position as a decimal value between 0 and 1. To set the position, we get the position in milliseconds by multiplying the value by `CrossMediaManager.Current.Duration.TotalMilliseconds`.
 
-Add the following to *DetailPage.xaml* after the horizontal `StackPanel` that shows the buttons:
+Add the following to *DetailPage.xaml* after the horizontal `StackLayout` that shows the buttons:
 
 ```xaml
 <StackLayout Orientation="Horizontal" Margin="0,10,0,10">
-    <Label Text="{Binding CurrentPositionString}" WidthRequest="55"
-           VerticalOptions="Center" />
     <Slider IsEnabled="{Binding IsPlaying}"
             HorizontalOptions="FillAndExpand"
             Value="{Binding CurrentPosition}" 
@@ -554,40 +526,41 @@ Add the following to *DetailPage.xaml* after the horizontal `StackPanel` that sh
 
 Notice that the `ThumbImageSource` property is set to "thumb". The default thumb is too small for my liking, so I created a simple rectangle with button-style shading.
 
-The `CurrentPositionString` is shown to the left of the slider. When we are done, it will look like this:
-
-<img src="md-images/image-20210703182212083.png" alt="image-20210703182212083" style="zoom: 80%;" />
-
-But, we're not done yet! We need to add a couple lines of code to the PositionChanged event handler.  Let's replace it with the following:
+But, we're not done yet! We need to update the PositionChanged event handler.  Let's replace it with the following:
 
 ```c#
-private void Current_PositionChanged(object sender,
-        MediaManager.Playback.PositionChangedEventArgs e)
-{
-    TimeSpan currentMediaPosition = CrossMediaManager.Current.Position;
-    TimeSpan currentMediaDuration = CrossMediaManager.Current.Duration;
-    TimeSpan TimeRemaining = currentMediaDuration.Subtract(currentMediaPosition);
-    if (IsPlaying)
-    {
-        if (TimeRemaining.Hours == 0)
+private void Current_PositionChanged(object sender, MediaManager.Playback.PositionChangedEventArgs e)
         {
-            CurrentStatus = $"Time Remaining: {TimeRemaining.Minutes:D1}:{TimeRemaining.Seconds:D2}";
+            TimeSpan currentMediaPosition = CrossMediaManager.Current.Position;
+            TimeSpan currentMediaDuration = CrossMediaManager.Current.Duration;
+            if (IsPlaying)
+            {
+                if (currentMediaDuration.Hours == 0)
+                {
+                    CurrentStatus = $"{currentMediaPosition.Minutes:D1}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
+                }
+                else
+                {
+                    if (currentMediaPosition.Hours == 0)
+                    {
+                        CurrentStatus = $"{currentMediaPosition.Minutes:D1}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Hours:D1}:{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
+                    }
+                    else
+                    {
+                        CurrentStatus = $"{currentMediaPosition.Hours:D1}:{currentMediaPosition.Minutes:D2}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Hours:D1}:{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
+                    }
+                }
+                base.OnPropertyChanged("CurrentPosition");
+            }
         }
-        else
-        {
-            CurrentStatus = $"Time Remaining: {TimeRemaining.Hours:D1}:{TimeRemaining.Minutes:D2}:{TimeRemaining.Seconds:D2}";
-        }
-        base.OnPropertyChanged("CurrentPosition");
-        base.OnPropertyChanged("CurrentPositionString");
-    }
-}
 ```
+
+Rather than showing the time remaining, I chose to display the current position and the duration, like many other players do. 
 
 We added these two lines:
 
 ```c#
         base.OnPropertyChanged("CurrentPosition");
-        base.OnPropertyChanged("CurrentPositionString");
 ```
 
 If you recall, the `BaseViewModel` class, from which our ViewModels inherit, has support for `INotifyPropertyChanged`. Any time we want we can call the `OnPropertyChanged` method to tell Xamarin Forms that the value of a property has been updated, so it can update the UI.
@@ -600,11 +573,11 @@ Here's what my app looks like now:
 
 <img src="md-images/image-20210703183407830.png" alt="image-20210703183407830" style="zoom:50%;" />
 
+<img src="md-images/image-20210705213039378.png" alt="image-20210705213039378" style="zoom:50%;" />
+
+<img src="md-images/image-20210705213321096.png" alt="image-20210705213321096" style="zoom:50%;" />
 
 
-<img src="md-images/image-20210703183426889.png" alt="image-20210703183426889" style="zoom:50%;" />
-
-<img src="md-images/image-20210703183457272.png" alt="image-20210703183457272" style="zoom:50%;" />
 
 So here, at the end of part 5, are the complete versions of all our major source files:
 
@@ -848,7 +821,6 @@ namespace DotNetRocks.ViewModels
                         </Image>
                     </StackLayout>
                     <StackLayout Orientation="Horizontal" Margin="0,10,0,10">
-                        <Label Text="{Binding CurrentPositionString}" WidthRequest="55" VerticalOptions="Center" />
                         <Slider IsEnabled="{Binding IsPlaying}"
                             HorizontalOptions="FillAndExpand"
                             Value="{Binding CurrentPosition}" 
@@ -1015,19 +987,24 @@ namespace DotNetRocks.ViewModels
         {
             TimeSpan currentMediaPosition = CrossMediaManager.Current.Position;
             TimeSpan currentMediaDuration = CrossMediaManager.Current.Duration;
-            TimeSpan TimeRemaining = currentMediaDuration.Subtract(currentMediaPosition);
             if (IsPlaying)
             {
-                if (TimeRemaining.Hours == 0)
+                if (currentMediaDuration.Hours == 0)
                 {
-                    CurrentStatus = $"Time Remaining: {TimeRemaining.Minutes:D1}:{TimeRemaining.Seconds:D2}";
+                    CurrentStatus = $"{currentMediaPosition.Minutes:D1}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
                 }
                 else
                 {
-                    CurrentStatus = $"Time Remaining: {TimeRemaining.Hours:D1}:{TimeRemaining.Minutes:D2}:{TimeRemaining.Seconds:D2}";
+                    if (currentMediaPosition.Hours == 0)
+                    {
+                        CurrentStatus = $"{currentMediaPosition.Minutes:D1}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Hours:D1}:{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
+                    }
+                    else
+                    {
+                        CurrentStatus = $"{currentMediaPosition.Hours:D1}:{currentMediaPosition.Minutes:D2}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Hours:D1}:{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
+                    }
                 }
                 base.OnPropertyChanged("CurrentPosition");
-                base.OnPropertyChanged("CurrentPositionString");
             }
         }
 
@@ -1211,6 +1188,7 @@ namespace DotNetRocks.ViewModels
                 CrossMediaManager.Current.SeekTo(CrossMediaManager.Current.Position.Add(TenSeconds));
           }
 
+
         public void DownloadFile()
         {
             var Uri = new Uri(CurrentShow.ShowDetails.File.Url);
@@ -1234,6 +1212,7 @@ namespace DotNetRocks.ViewModels
                 webClient.DownloadDataAsync(Uri);
             }
         }
+
 
         private ICommand stop;
         public ICommand Stop
@@ -1259,6 +1238,8 @@ namespace DotNetRocks.ViewModels
                 LocalFileStream.Dispose();
             }
         }
+
+
 
         private string currentStatus;
         public string CurrentStatus

@@ -81,7 +81,6 @@
                         </Image>
                     </StackLayout>
                     <StackLayout Orientation="Horizontal" Margin="0,10,0,10">
-                        <Label Text="{Binding CurrentPositionString}" WidthRequest="55" VerticalOptions="Center" />
                         <Slider IsEnabled="{Binding IsPlaying}"
                             HorizontalOptions="FillAndExpand"
                             Value="{Binding CurrentPosition}" 

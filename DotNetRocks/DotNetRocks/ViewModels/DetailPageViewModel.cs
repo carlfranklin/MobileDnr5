@@ -73,19 +73,24 @@ namespace DotNetRocks.ViewModels
         {
             TimeSpan currentMediaPosition = CrossMediaManager.Current.Position;
             TimeSpan currentMediaDuration = CrossMediaManager.Current.Duration;
-            TimeSpan TimeRemaining = currentMediaDuration.Subtract(currentMediaPosition);
             if (IsPlaying)
             {
-                if (TimeRemaining.Hours == 0)
+                if (currentMediaDuration.Hours == 0)
                 {
-                    CurrentStatus = $"Time Remaining: {TimeRemaining.Minutes:D1}:{TimeRemaining.Seconds:D2}";
+                    CurrentStatus = $"{currentMediaPosition.Minutes:D1}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
                 }
                 else
                 {
-                    CurrentStatus = $"Time Remaining: {TimeRemaining.Hours:D1}:{TimeRemaining.Minutes:D2}:{TimeRemaining.Seconds:D2}";
+                    if (currentMediaPosition.Hours == 0)
+                    {
+                        CurrentStatus = $"{currentMediaPosition.Minutes:D1}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Hours:D1}:{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
+                    }
+                    else
+                    {
+                        CurrentStatus = $"{currentMediaPosition.Hours:D1}:{currentMediaPosition.Minutes:D2}:{currentMediaPosition.Seconds:D2}/{currentMediaDuration.Hours:D1}:{currentMediaDuration.Minutes:D1}:{currentMediaDuration.Seconds:D2}";
+                    }
                 }
                 base.OnPropertyChanged("CurrentPosition");
-                base.OnPropertyChanged("CurrentPositionString");
             }
         }
 
@@ -319,8 +324,6 @@ namespace DotNetRocks.ViewModels
                 LocalFileStream.Dispose();
             }
         }
-
-
 
         private string currentStatus;
         public string CurrentStatus
