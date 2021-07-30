@@ -590,8 +590,7 @@ So here, at the end of part 5, are the complete versions of all our major source
              x:Class="DotNetRocks.Views.HomePage"
              xmlns:local="clr-namespace:DotNetRocks"
              xmlns:viewmodels="clr-namespace:DotNetRocks.ViewModels"
-             xmlns:dxcv="http://schemas.devexpress.com/xamarin/2014/forms/collectionview"
-             >
+xmlns:dxcv="clr-namespace:DevExpress.XamarinForms.CollectionView;assembly=DevExpress.XamarinForms.CollectionView">
 
     <ContentPage.BindingContext>
         <viewmodels:HomePageViewModel/>
@@ -743,7 +742,7 @@ namespace DotNetRocks.ViewModels
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:DotNetRocks"
              xmlns:viewmodels="clr-namespace:DotNetRocks.ViewModels"
-             xmlns:dxcv="http://schemas.devexpress.com/xamarin/2014/forms/collectionview"
+             xmlns:dxcv="clr-namespace:DevExpress.XamarinForms.CollectionView;assembly=DevExpress.XamarinForms.CollectionView"
              x:Class="DotNetRocks.Views.DetailPage">
 
     <ContentPage.BindingContext>
